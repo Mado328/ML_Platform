@@ -1,0 +1,19 @@
+[project]
+name = "ml-platform"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Mado328", email = "max0362.dor@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=1.24",
+]
+
+[project.scripts]
+ml-platform = "ml_platform:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"

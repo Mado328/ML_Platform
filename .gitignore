@@ -1,0 +1,29 @@
+# Виртуальные окружения
+.venv/
+venv/
+
+# Python-кэш
+__pycache__/
+*.py[cod]
+
+# Сборка пакета
+build/
+dist/
+*.egg-info/
+
+# Кэш инструментов и тестов
+.pytest_cache/
+.mypy_cache/
+.pyright/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Локальные секреты
+.env
+.env.*
+!.env.example
+
+# Системные файлы
+.DS_Store
+Thumbs.db
