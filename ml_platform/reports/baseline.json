@@ -1,0 +1,58 @@
+{
+  "dataset": {
+    "source_rows": 5574,
+    "unique_texts": 5171,
+    "removed_duplicates": 403
+  },
+  "split": {
+    "seed": 42,
+    "train": 3619,
+    "validation": 776,
+    "test": 776
+  },
+  "model_selection": {
+    "model": "MultinomialNB",
+    "alpha_candidates": [
+      0.1,
+      0.5,
+      1.0,
+      2.0
+    ],
+    "selected_alpha": 2.0,
+    "validation_spam_f1": 0.9183673469387755
+  },
+  "test": {
+    "naive_bayes": {
+      "accuracy": 0.9780927835051546,
+      "spam_precision": 0.8932038834951457,
+      "spam_recall": 0.9387755102040817,
+      "spam_f1": 0.9154228855721394,
+      "confusion_matrix": [
+        [
+          667,
+          11
+        ],
+        [
+          6,
+          92
+        ]
+      ]
+    },
+    "majority_baseline": {
+      "accuracy": 0.8737113402061856,
+      "spam_precision": 0.0,
+      "spam_recall": 0.0,
+      "spam_f1": 0.0,
+      "confusion_matrix": [
+        [
+          678,
+          0
+        ],
+        [
+          98,
+          0
+        ]
+      ]
+    }
+  }
+}
