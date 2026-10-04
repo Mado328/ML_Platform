@@ -9,12 +9,17 @@ class KNN(BaseClassifier):
     """
 
     def __init__(self, n_neighbors: int = 5):
-        self.set_params(n_neighbors=n_neighbors)
         self._is_fitted = False
+        self.n_neighbors = 5
+        self.set_params(n_neighbors=n_neighbors)
         self._classes_: list[Any] | None = None
 
     def fit(self, X, y):
         """Store the training samples and their labels."""
+
+        if self.is_fitted:
+            raise RuntimeError("KNN classifier has already been fitted")
+
         X_train = [list(sample) for sample in X]
         y_train = list(y)
 
@@ -54,14 +59,17 @@ class KNN(BaseClassifier):
 
     def set_params(self, **params) -> "KNN":
         """Update the classifier's hyperparameters."""
+
         unknown = set(params) - {"n_neighbors"}
         if unknown:
             raise ValueError(f"Unknown parameter(s): {', '.join(sorted(unknown))}")
 
-        n_neighbors = params.get("n_neighbors", self.n_neighbors if hasattr(self, "n_neighbors") else 5)
+        n_neighbors = params.get("n_neighbors", self.n_neighbors)
         if isinstance(n_neighbors, bool) or not isinstance(n_neighbors, int) or n_neighbors < 1:
             raise ValueError("n_neighbors must be a positive integer")
 
+        if self.n_neighbors != n_neighbors:
+            self._is_fitted = False
         self.n_neighbors = n_neighbors
         return self
 

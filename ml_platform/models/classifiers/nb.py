@@ -10,21 +10,26 @@ def tokenize(x):
     """Разбивает строку на слова и приводит их к нижнему регистру."""
     # \w+ находит последовательности букв и цифр, в том числе кириллицу.
     # lower() позволяет считать «Приз» и «приз» одним словом.
-    return re.findall(r"\w+", x.lower())
 
+    return re.findall(r"\w+", x.lower())
+    
 
 class MultinomialNB(BaseClassifier):
     def __init__(self, alpha=1.0):
-        # alpha — сила сглаживания Лапласа.
-        # Оно не даёт вероятности слова стать нулевой, если его не было
-        # в обучающих примерах данного класса.
-        self.alpha = alpha
         self._is_fitted = False
+        self.alpha = 1.0
+        self.set_params(alpha=alpha)
 
     def fit(self, X, y):
         """Запоминает статистику слов и классов по обучающим примерам."""
 
-        self._is_fitted = True
+        if self.is_fitted:
+            raise RuntimeError("MultinomialNB classifier has already been fitted")
+        if not X:
+            raise ValueError("X must contain at least one training sample")
+
+        if len(X) != len(y):
+            raise ValueError("X and y must contain the same number of samples")
         # Список классов, например ["обычное", "спам"].
         self.classes = sorted(set(y))
 
@@ -70,11 +75,15 @@ class MultinomialNB(BaseClassifier):
         # Общее число обучающих сообщений — для априорной вероятности класса.
         self.total_docs = len(X)
 
+        self._is_fitted = True
+
         return self
 
     def predict_proba(self, X):
         """Возвращает оценку вероятности каждого класса для сообщения."""
 
+        if not self.is_fitted:
+            raise RuntimeError("MultinomialNB classifier has not been fitted")
         # Разбиваем сообщение на слова.
         words = tokenize(X)
 
@@ -144,11 +153,35 @@ class MultinomialNB(BaseClassifier):
 
     def get_params(self) -> dict[str, Any]:
 
-        return {'alpha': self.alpha,
-                'classes': self.classes}
+        return {'alpha': self.alpha}
 
     def set_params(self, **params: Any) -> "MultinomialNB":
+        # get_params содержит только допустимые гиперпараметры.
 
+        allowed_params = self.get_params()
+        unknown_params = set(params) - allowed_params.keys()
+    
+        # Неизвестные имена — ошибка API, а не повод создать новый атрибут.
+        if unknown_params:
+            names = ", ".join(sorted(unknown_params))
+            raise ValueError(f"Unknown parameter(s): {names}")
+    
+        # Пустой вызов — без изменений.
+        if not params:
+            return self
+    
+        # Проверяем значение до изменения объекта.
+        alpha = params.get("alpha", self.alpha)
+        if isinstance(alpha, bool) or not isinstance(alpha, (int, float)):
+            raise ValueError("alpha must be a finite number greater than 0")
+        if not math.isfinite(alpha) or alpha <= 0:
+            raise ValueError("alpha must be a finite number greater than 0")
+    
+        # Меняем состояние только после успешной проверки.
+        if alpha != self.alpha:
+            self.alpha = float(alpha)
+            self._is_fitted = False
+    
         return self
 
     @property
@@ -158,4 +191,6 @@ class MultinomialNB(BaseClassifier):
 
     @property
     def classes_(self) -> Any:
+        if not self.is_fitted:
+            raise RuntimeError("MultinomialNB classifier has not been fitted")
         return self.classes

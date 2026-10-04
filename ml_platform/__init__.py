@@ -1,4 +1,5 @@
 from .models.classifiers.nb import MultinomialNB
+from .models.classifiers.knn import KNN
 
 def main() -> None:
         # Обучающие сообщения — примеры, по которым модель учится.
@@ -19,10 +20,12 @@ def main() -> None:
     ]
 
     # Создаём классификатор со сглаживанием Лапласа alpha=1.
-    model = MultinomialNB(alpha=1.0)
+    model = MultinomialNB()
 
     # Обучаем его на сообщениях и соответствующих метках.
     model.fit(xs, labels)
+
+    print(model.get_params())
 
     # Проверяем классификатор на новых сообщениях,
     # которых не было в обучающем наборе.
