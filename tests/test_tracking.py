@@ -6,6 +6,8 @@ from ml_platform.tracking import (
     get_run,
     get_run_metrics,
     get_run_params,
+    list_experiments,
+    list_runs,
     log_metric,
     log_param,
     start_run,
@@ -147,6 +149,45 @@ def test_empty_logs_and_unknown_run_lookups():
     for lookup in (get_run, get_run_params, get_run_metrics):
         with pytest.raises(KeyError):
             lookup("missing-run")
+
+
+def test_list_runs_filters_by_exact_experiment_and_orders_newest_first(monkeypatch):
+    timestamps = iter(
+        datetime(2025, 1, 1, 0, minute=minute, tzinfo=timezone.utc)
+        for minute in range(6)
+    )
+    monkeypatch.setattr(SQLiteStore, "_now", staticmethod(lambda: next(timestamps)))
+
+    with start_run("sms-baseline", "older") as older:
+        older_id = older.run_id
+    with start_run("other-experiment", "unrelated"):
+        pass
+    with start_run("sms-baseline", "newer") as newer:
+        newer_id = newer.run_id
+
+    runs = list_runs("sms-baseline")
+    assert [run.run_id for run in runs] == [newer_id, older_id]
+    assert [run.run_name for run in runs] == ["newer", "older"]
+    assert list_runs("SMS-baseline") == []
+    assert list_runs("missing-experiment") == []
+
+
+def test_list_experiments_returns_sorted_entities():
+    assert list_experiments() == []
+
+    with start_run("z-experiment"):
+        pass
+    with start_run("a-experiment"):
+        pass
+
+    experiments = list_experiments()
+    assert [experiment.name for experiment in experiments] == [
+        "a-experiment",
+        "z-experiment",
+    ]
+    assert all(experiment.experiment_id for experiment in experiments)
+    assert all(experiment.created_at.tzinfo == timezone.utc for experiment in experiments)
+    assert all(experiment.updated_at.tzinfo == timezone.utc for experiment in experiments)
 
 
 def test_active_run_keeps_store_selected_when_started(monkeypatch, tmp_path):
