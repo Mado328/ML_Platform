@@ -8,12 +8,23 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "click>=8.1",
     "numpy==2.5.4",
     "pandas>=3.0.6",
 ]
 
 [project.scripts]
-ml-platform = "ml_platform:main"
+ml-platform = "ml_platform.cli:cli"
+
+[project.optional-dependencies]
+baseline = [
+    "scikit-learn>=1.9.1",
+]
+ui = [
+    "fastapi>=0.115",
+    "streamlit>=1.40",
+    "uvicorn>=0.34",
+]
 
 [build-system]
 requires = ["setuptools>=61"]
@@ -21,6 +32,6 @@ build-backend = "setuptools.build_meta"
 
 [dependency-groups]
 dev = [
+    "httpx2",
     "pytest>=9.1.1",
-    "scikit-learn>=1.9.1",
 ]
