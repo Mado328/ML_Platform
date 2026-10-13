@@ -30,3 +30,6 @@ Thumbs.db
 
 # Набор данных
 ml_platform/data/raw/
+
+# Локальная база трекинга
+ml_platform.db
