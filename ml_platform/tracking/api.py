@@ -4,7 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from .context import RunContext, require_active_run, require_active_store
-from .entities import MetricRecord, Run
+from .entities import Experiment, MetricRecord, Run
 from .sqlite_store import SQLiteStore
 
 
@@ -51,6 +51,14 @@ def log_metric(key: str, value: float, step: int = 0) -> None:
 
 def get_run(run_id: str) -> Run:
     return get_store().get_run(run_id)
+
+
+def list_runs(experiment_name: str) -> list[Run]:
+    return get_store().list_runs(experiment_name)
+
+
+def list_experiments() -> list[Experiment]:
+    return get_store().list_experiments()
 
 
 def get_run_params(run_id: str) -> dict[str, str | int | float | bool]:

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Iterator
 from uuid import uuid4
 
-from .entities import MetricRecord, Run, RunStatus
+from .entities import Experiment, MetricRecord, Run, RunStatus
 
 
 class SQLiteStore:
@@ -138,6 +138,29 @@ class SQLiteStore:
             )
         return run
 
+    def list_experiments(self) -> list[Experiment]:
+        with self._connection() as connection:
+            rows = connection.execute(
+                "SELECT * FROM experiments ORDER BY name COLLATE BINARY"
+            ).fetchall()
+
+        experiments: list[Experiment] = []
+        for row in rows:
+            created_at = self._datetime(row["created_at"])
+            updated_at = self._datetime(row["updated_at"])
+            assert created_at is not None
+            assert updated_at is not None
+            experiments.append(
+                Experiment(
+                    experiment_id=row["experiment_id"],
+                    name=row["name"],
+                    description=row["description"],
+                    created_at=created_at,
+                    updated_at=updated_at,
+                )
+            )
+        return experiments
+
     def log_param(self, run_id: str, key: str, value: str | int | float | bool) -> None:
         if not isinstance(key, str) or not key:
             raise ValueError("Parameter key cannot be empty")
@@ -213,6 +236,22 @@ class SQLiteStore:
         if row is None:
             raise KeyError(run_id)
         return self._run_from_row(row)
+
+    def list_runs(self, experiment_name: str) -> list[Run]:
+        if not isinstance(experiment_name, str):
+            raise ValueError("Experiment name must be a string")
+
+        with self._connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT runs.* FROM runs
+                JOIN experiments USING (experiment_id)
+                WHERE experiments.name = ?
+                ORDER BY runs.started_at DESC, runs.run_id DESC
+                """,
+                (experiment_name,),
+            ).fetchall()
+        return [self._run_from_row(row) for row in rows]
 
     def get_run_params(self, run_id: str) -> dict[str, str | int | float | bool]:
         with self._connection() as connection:
