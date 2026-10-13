@@ -119,7 +119,7 @@ class MultinomialNB(BaseClassifier):
                     / (self.total_words[label] + self.alpha * self.vocab_size)
                 )
 
-                # По наивному Байесу считаем слова независимыми
+                # По-наивному Байесу считаем слова независимыми
                 # и складываем логарифмы их вероятностей.
                 score += math.log(word_probability)
 
